@@ -19,7 +19,7 @@ This extension requires ActivityWatch to be running on your machine.
 
 ## Install Instructions
 
-To install this extension, search for aw-watcher-netbeans on [github](https://github.com), and find releases link download last release of .nbm file.
+To install this extension, search for aw-watcher-netbeans on [github](https://github.com/Domingos-Masta/aw-watcher-netbeans/releases), and find releases link download last release of .nbm file.
 
 Extract the contents of the NetBeans Plugins file to a directory on your local machine. Make note of the location.
 
