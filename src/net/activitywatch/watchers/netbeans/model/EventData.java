@@ -5,6 +5,7 @@
  */
 package net.activitywatch.watchers.netbeans.model;
 
+import org.apache.commons.io.FilenameUtils;
 import org.netbeans.api.project.Project;
 
 /**
@@ -14,16 +15,43 @@ import org.netbeans.api.project.Project;
 public class EventData
 {
 
-    public final String file;
-    public final String project;
-    public final String language;
-    public final String eventType = "app.editor.activity";
+    private final String file;
+    private final String project;
+    private final String language;
+    private final String eventType = "app.editor.activity";
 
     public EventData(String file, Project project, String language)
     {
         this.file = file;
         this.project = project.getProjectDirectory().getPath();
-        this.language = file.substring(file.lastIndexOf("."));
+        String extension = FilenameUtils.getExtension(file);
+        this.language = extension.equals("") ? "Unknown" : extension;
+    }
+
+    public String getFile()
+    {
+        return file;
+    }
+
+    public String getProject()
+    {
+        return project;
+    }
+
+    public String getLanguage()
+    {
+        return language;
+    }
+
+    public String getEventType()
+    {
+        return eventType;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "EventData{" + "file=" + file + ", project=" + project + ", language=" + language + ", eventType=" + eventType + '}';
     }
 
 }

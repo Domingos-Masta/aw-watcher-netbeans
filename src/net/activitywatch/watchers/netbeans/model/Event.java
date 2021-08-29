@@ -6,10 +6,8 @@
 package net.activitywatch.watchers.netbeans.model;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import net.activitywatch.watchers.netbeans.ActivityWatch;
+import net.activitywatch.watchers.netbeans.util.Util;
 
 /**
  *
@@ -18,18 +16,36 @@ import net.activitywatch.watchers.netbeans.ActivityWatch;
 public class Event
 {
 
-    public final String timestamp;
-    public final BigDecimal duration;
-    public final EventData data;
+    private final String timestamp;
+    private final BigDecimal duration;
+    private final EventData data;
 
     public Event(EventData data)
     {
-        Date now = new Date();
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
-        this.timestamp = df.format(now);
-
+        this.timestamp = Util.getDateFormat();
         this.duration = ActivityWatch.getCurrentTimestamp().subtract(new BigDecimal(ActivityWatch.lastTime));
         this.data = data;
+    }
+
+    public String getTimestamp()
+    {
+        return timestamp;
+    }
+
+    public BigDecimal getDuration()
+    {
+        return duration;
+    }
+
+    public EventData getData()
+    {
+        return data;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Event{" + "timestamp=" + timestamp + ", duration=" + duration + ", data=" + data + '}';
     }
 
 }

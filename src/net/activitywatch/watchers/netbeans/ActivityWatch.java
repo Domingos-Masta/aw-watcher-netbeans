@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -72,9 +71,9 @@ public class ActivityWatch extends ModuleInstall implements Runnable
         catch (UnknownHostException ex) {
             Exceptions.printStackTrace(ex);
         }
-        Date now = Calendar.getInstance().getTime();
-        ActivityWatch.buckets = new Buckets(now.toString(),
-                "This is a watcher for netbeans, send information and events to ActivityWatch",
+        ActivityWatch.buckets = new Buckets(Calendar.getInstance().getTime().toString(),
+                "This is a watcher for netbeans, send information and events "
+                + "to ActivityWatch",
                 "app.editor.activity", Consts.AW_CLIENT_NAME, HOST_NAME);
     }
 
@@ -83,7 +82,8 @@ public class ActivityWatch extends ModuleInstall implements Runnable
     {
         ActivityWatch.VERSION = ActivityWatch.getPluginVersion();
         ActivityWatch.IDE_VERSION = System.getProperty("netbeans.buildnumber");
-        ActivityWatch.log.log(Level.INFO, "Initializing ActivityWatch plugin v{0} (https://activitywatch.net/)", ActivityWatch.VERSION);
+        ActivityWatch.log.log(Level.INFO, "Initializing ActivityWatch plugin v{0} "
+                                          + "(https://activitywatch.net/)", ActivityWatch.VERSION);
         ActivityWatch.info("ActivityWatch is loaded");
 
         ActivityWatch.DEBUG = ActivityWatch.isDebugEnabled();
@@ -147,7 +147,6 @@ public class ActivityWatch extends ModuleInstall implements Runnable
                 ActivityWatch.warn(e.toString());
             }
         }
-
         return debug != null && debug.equals("true");
     }
 
@@ -171,10 +170,8 @@ public class ActivityWatch extends ModuleInstall implements Runnable
         }
     }
 
-//    Send event test to the storage api
     private static void sendHeartbeat(final String file, final Project currentProject, final boolean isWrite, final int tries)
     {
-//        final String[] cmds = buildCliCommand(file, currentProject, isWrite);
         ActivityWatch.info("Executing CLI: Send data ... " + ActivityWatch.buckets);
         Runnable r = new Runnable()
         {

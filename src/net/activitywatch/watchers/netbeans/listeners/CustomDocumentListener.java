@@ -5,6 +5,7 @@
  */
 package net.activitywatch.watchers.netbeans.listeners;
 
+import java.util.Calendar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -65,7 +66,7 @@ public class CustomDocumentListener implements DocumentListener
         final FileObject file = this.getFile();
         if (file != null) {
             final Project currentProject = this.getProject();
-            final long currentTime = System.currentTimeMillis() / 1000;
+            final long currentTime = Calendar.getInstance().getTimeInMillis() / 1000;
             SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
