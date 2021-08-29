@@ -266,7 +266,7 @@ public final class UpdateHandler
     {
         List<UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(true);
         for (UpdateUnitProvider p : providers) {
-            if (ActivityWatch.CODE_NAME.equals(p.getName())) {
+            if (Consts.CODE_NAME.equals(p.getName())) {
                 try {
                     final String displayName = "Checking for plugin updates...";
                     p.refresh(
@@ -395,7 +395,7 @@ public final class UpdateHandler
 
     private static boolean installNewModules()
     {
-        String s = NbBundle.getBundle(ActivityWatch.NAMESPACE + ".Bundle").getString("UpdateHandler.NewModules");
+        String s = NbBundle.getBundle(Consts.NAMESPACE + ".Bundle").getString("UpdateHandler.NewModules");
         return Boolean.parseBoolean(s);
     }
 }

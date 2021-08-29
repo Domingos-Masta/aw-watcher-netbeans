@@ -42,6 +42,16 @@ public class Buckets
         this.hostname = hostname;
     }
 
+    public Buckets(String created, String name, String type, String client, String hostname)
+    {
+        this.id = client + "_" + hostname;
+        this.created = created;
+        this.name = name;
+        this.type = type;
+        this.client = client;
+        this.hostname = hostname;
+    }
+
     public String getId()
     {
         return id;

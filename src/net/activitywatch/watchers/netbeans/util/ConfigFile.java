@@ -22,7 +22,7 @@ public class ConfigFile
 {
 
     private static File userHomeDir = new File(System.getProperty("user.home"));
-    private static File configFile = new File(userHomeDir, ActivityWatch.CONFIG);
+    private static File configFile = new File(userHomeDir, Consts.CONFIG);
 
 //    Podemos adicionar sempre mais uma informação apra testes
     public static String get(String section, String key)
