@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -24,6 +23,7 @@ import javax.swing.text.JTextComponent;
 import net.activitywatch.watchers.netbeans.model.Buckets;
 import net.activitywatch.watchers.netbeans.requests.RequestHandler;
 import net.activitywatch.watchers.netbeans.util.Consts;
+import net.activitywatch.watchers.netbeans.util.DateUtils;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -71,7 +71,7 @@ public class ActivityWatch extends ModuleInstall implements Runnable
         catch (UnknownHostException ex) {
             Exceptions.printStackTrace(ex);
         }
-        ActivityWatch.buckets = new Buckets(Calendar.getInstance().getTime().toString(),
+        ActivityWatch.buckets = new Buckets(DateUtils.dataTimeAgoraYYYY(),
                 "This is a watcher for netbeans, send information and events "
                 + "to ActivityWatch",
                 "app.editor.activity", Consts.AW_CLIENT_NAME, HOST_NAME);

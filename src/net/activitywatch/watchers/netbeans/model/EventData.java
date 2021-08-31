@@ -5,7 +5,7 @@
  */
 package net.activitywatch.watchers.netbeans.model;
 
-import org.apache.commons.io.FilenameUtils;
+import org.gradle.internal.impldep.org.apache.commons.io.FilenameUtils;
 import org.netbeans.api.project.Project;
 
 /**
