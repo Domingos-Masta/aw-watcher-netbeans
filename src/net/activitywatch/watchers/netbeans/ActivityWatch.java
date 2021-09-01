@@ -8,7 +8,7 @@ package net.activitywatch.watchers.netbeans;
 import net.activitywatch.watchers.netbeans.util.ConfigFile;
 import net.activitywatch.watchers.netbeans.util.UpdateHandler;
 import net.activitywatch.watchers.netbeans.model.EventData;
-import net.activitywatch.watchers.netbeans.model.Event;
+import net.activitywatch.watchers.netbeans.model.EventHeartbeat;
 import net.activitywatch.watchers.netbeans.listeners.CustomDocumentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -24,6 +24,7 @@ import net.activitywatch.watchers.netbeans.model.Buckets;
 import net.activitywatch.watchers.netbeans.requests.RequestHandler;
 import net.activitywatch.watchers.netbeans.util.Consts;
 import net.activitywatch.watchers.netbeans.util.DateUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -46,21 +47,25 @@ public class ActivityWatch extends ModuleInstall implements Runnable
 {
 
     public static final Logger log = Logger.getLogger("ActivityWatch");
-    public static final short FREQUENCY = 2; // minutes between pings
-    public static final Integer MAX_HEART_BEAT_TIME = 1;
 
     // For not error
     public static String VERSION = "Unknown";
     public static String IDE_VERSION = "Unknown";
     public static String HOST_NAME = "Unknown";
-    public static Boolean DEBUG = false;
-    public static Boolean READY = false;
 
-    public static String lastFile = null;
-    public static long lastTime = 0;
+    public static Boolean DEBUG = false;
+
+    public static String lastFilePath = "";
+    public static Long lastHeartbeatTime = Long.valueOf(0);
 
     public static Buckets buckets;
     public static CustomDocumentListener documentListener = null;
+
+//  IMPLEMENTATION OF VS CODE WATCHER LOGIC.
+    // Heartbeat handling
+    private static final Integer PULSE_TIME = 20;
+    private static final Integer MAX_HEARTBEATS_PER_SEC = 1;
+//  END OF IMPLEMENTATION OF VSCODE WATCHER LOGIC
 
     public ActivityWatch()
     {
@@ -92,8 +97,6 @@ public class ActivityWatch extends ModuleInstall implements Runnable
             ActivityWatch.debug("Logging level set to DEBUG");
         }
 
-        // Set class to run as a true
-        ActivityWatch.READY = true;
         // Listen for changes to documents
         PropertyChangeListener l = new PropertyChangeListener()
         {
@@ -130,9 +133,9 @@ public class ActivityWatch extends ModuleInstall implements Runnable
         });
     }
 
-    public static boolean enoughTimePassed(long currentTime)
+    public static Boolean enoughTimePassed(Long currentTime)
     {
-        return ActivityWatch.lastTime + FREQUENCY * 60 < currentTime;
+        return ActivityWatch.lastHeartbeatTime + (1000 / (ActivityWatch.MAX_HEARTBEATS_PER_SEC)) < currentTime;
     }
 
     public static Boolean isDebugEnabled()
@@ -163,31 +166,30 @@ public class ActivityWatch extends ModuleInstall implements Runnable
         return "Unknown";
     }
 
-    public static void sendHeartbeat(String file, Project currentProject, boolean isWrite)
+    public static EventHeartbeat createHeartbeat(String currentFile, Project currentProject)
     {
-        if (ActivityWatch.READY) {
-            sendHeartbeat(file, currentProject, isWrite, 0);
-        }
+        EventData data = new EventData(currentFile, currentProject, getFileExtension(currentFile));
+        EventHeartbeat heartbeat = new EventHeartbeat(data);
+        return heartbeat;
     }
 
-    private static void sendHeartbeat(final String file, final Project currentProject, final boolean isWrite, final int tries)
+    public static void sendHeartbeat(final EventHeartbeat heartbeat)
     {
         ActivityWatch.info("Executing CLI: Send data ... " + ActivityWatch.buckets);
         Runnable r = new Runnable()
         {
-            Event e = new Event(new EventData(file, currentProject, lastFile));
-
             public void run()
             {
-                ActivityWatch.info("Executing CLI: Send data ... " + RequestHandler.javaObjToJSON(e));
+                ActivityWatch.info("Executing CLI: Send data ... " + RequestHandler.javaObjToJSON(heartbeat));
                 try {
-                    String requestResponse = RequestHandler.sendGET("/api/0/buckets/" + ActivityWatch.buckets.getId());
+                    String requestResponse = RequestHandler.getRequest("/api/0/buckets/" + ActivityWatch.buckets.getId(), ActivityWatch.DEBUG);
                     ActivityWatch.info("Bucket:  " + ActivityWatch.buckets + ";  Query response: " + requestResponse);
                     if (requestResponse.equalsIgnoreCase("404")) {
-                        requestResponse = RequestHandler.postJSON(ActivityWatch.buckets, "/api/0/buckets/" + ActivityWatch.buckets.getId());
+                        requestResponse = RequestHandler.postRquest(ActivityWatch.buckets, "/api/0/buckets/" + ActivityWatch.buckets.getId(), ActivityWatch.DEBUG);
                         ActivityWatch.info("Bucket:  " + ActivityWatch.buckets + ";  Post response: " + requestResponse);
                     }
-                    requestResponse = RequestHandler.postJSON(e, "/api/0/buckets/" + ActivityWatch.buckets.getId() + "/events");
+                    requestResponse = RequestHandler.postRquest(heartbeat, "/api/0/buckets/" + ActivityWatch.buckets.getId() + "/pulsetime=" + PULSE_TIME, ActivityWatch.DEBUG);
+//                    requestResponse = RequestHandler.postRquest(heartbeat, "/api/0/buckets/" + ActivityWatch.buckets.getId() + "/events",  ActivityWatch.DEBUG);
                     ActivityWatch.info("Sending data to server data ... " + requestResponse);
                 }
                 catch (IOException ex) {
@@ -197,6 +199,12 @@ public class ActivityWatch extends ModuleInstall implements Runnable
 
         };
         new Thread(r).start();
+    }
+
+    private static String getFileExtension(String filePath)
+    {
+        String fileExt = FilenameUtils.getExtension(filePath);
+        return fileExt.equals("") ? "Unknown" : fileExt;
     }
 
     public static BigDecimal getCurrentTimestamp()

@@ -5,25 +5,23 @@
  */
 package net.activitywatch.watchers.netbeans.model;
 
-import java.math.BigDecimal;
-import net.activitywatch.watchers.netbeans.ActivityWatch;
 import net.activitywatch.watchers.netbeans.util.Util;
 
 /**
  *
  * @author domingos.fernando
  */
-public class Event
+public class EventHeartbeat
 {
 
     private final String timestamp;
-    private final BigDecimal duration;
+    private final Long duration;
     private final EventData data;
 
-    public Event(EventData data)
+    public EventHeartbeat(EventData data)
     {
         this.timestamp = Util.getDateFormat();
-        this.duration = ActivityWatch.getCurrentTimestamp().subtract(new BigDecimal(ActivityWatch.lastTime));
+        this.duration = Long.valueOf(0);
         this.data = data;
     }
 
@@ -32,7 +30,7 @@ public class Event
         return timestamp;
     }
 
-    public BigDecimal getDuration()
+    public Long getDuration()
     {
         return duration;
     }

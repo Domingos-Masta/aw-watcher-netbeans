@@ -21,14 +21,15 @@ import net.activitywatch.watchers.netbeans.ActivityWatch;
 public class RequestHandler
 {
 
-    public static final String AW_WATCHER_URL = "http://localhost";
-    public static final String AW_WATCHER_PORT = ":5600";
+    public static final String AW_WATCHER_URL = "http://localhost:";
+    public static String AW_PROD_PORT = "5600";
+    public boolean IS_TESTING = false;
     private static final String USER_AGENT = "Mozilla/5.0";
 
-    public static String postJSON(Object badyData, String endPoint) throws IOException
+    public static String postRquest(Object badyData, String endPoint, boolean isTesting) throws IOException
     {
-//Change the URL with any other publicly accessible POST resource, which accepts JSON request body
-        URL url = new URL(AW_WATCHER_URL + AW_WATCHER_PORT + endPoint);
+        String port = isTesting ? "5666" : AW_PROD_PORT;
+        URL url = new URL(AW_WATCHER_URL + port + endPoint);
         StringBuilder response = null;
 
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -38,10 +39,6 @@ public class RequestHandler
         con.setRequestProperty("Accept", "application/json");
 
         con.setDoOutput(true);
-
-        //JSON String need to be constructed for the specific resource.
-        //We may construct complex JSON using any third-party JSON libraries such as jackson or org.json
-//        String jsonInputString = "{\"name\": \"Upendra\", \"job\": \"Programmer\"}";
         String jsonInputString = javaObjToJSON(badyData);
 
         try (OutputStream os = con.getOutputStream()) {
@@ -53,8 +50,7 @@ public class RequestHandler
 
         System.out.println(code);
 
-        ActivityWatch.info(code
-                           + "");
+        ActivityWatch.info(code + "");
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"))) {
             response = new StringBuilder();
@@ -70,10 +66,10 @@ public class RequestHandler
 
     }
 
-    public static String sendGET(String endPoint) throws IOException
+    public static String getRequest(String endPoint, boolean isTesting) throws IOException
     {
-
-        String url = AW_WATCHER_URL + AW_WATCHER_PORT + endPoint;
+        String port = isTesting ? "5666" : AW_PROD_PORT;
+        String url = AW_WATCHER_URL + port + endPoint;
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
@@ -100,44 +96,6 @@ public class RequestHandler
             return "" + responseCode;
         }
 
-    }
-
-    public static String sendPOST(String endPoint) throws IOException
-    {
-        URL obj = new URL(AW_WATCHER_URL + AW_WATCHER_PORT + endPoint);;
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-
-        // For POST only - START
-        con.setDoOutput(true);
-        OutputStream os = con.getOutputStream();
-        os.write("".getBytes());
-        os.flush();
-        os.close();
-        // For POST only - END
-
-        int responseCode = con.getResponseCode();
-        ActivityWatch.info("POST Response Code :: " + responseCode);
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // print result
-            ActivityWatch.info("Query response: " + response.toString());
-            return response.toString();
-        }
-        else {
-            ActivityWatch.info("POST request not worked");
-            return "" + responseCode;
-        }
     }
 
     public static String javaObjToJSON(Object entity)

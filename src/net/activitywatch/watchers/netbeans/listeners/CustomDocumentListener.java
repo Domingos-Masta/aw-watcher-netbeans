@@ -11,6 +11,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import net.activitywatch.watchers.netbeans.ActivityWatch;
+import net.activitywatch.watchers.netbeans.model.EventHeartbeat;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.api.Source;
@@ -66,17 +67,21 @@ public class CustomDocumentListener implements DocumentListener
         final FileObject file = this.getFile();
         if (file != null) {
             final Project currentProject = this.getProject();
-            final long currentTime = Calendar.getInstance().getTimeInMillis() / 1000;
+            final Long currentTime = Calendar.getInstance().getTimeInMillis();
             SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run()
                 {
                     final String currentFile = file.getPath();
-                    if ((!currentFile.equals(ActivityWatch.lastFile) || ActivityWatch.enoughTimePassed(currentTime))) {
-                        ActivityWatch.sendHeartbeat(currentFile, currentProject, false);
-                        ActivityWatch.lastFile = currentFile;
-                        ActivityWatch.lastTime = currentTime;
+                    if ((!currentFile.equals(ActivityWatch.lastFilePath) || ActivityWatch.enoughTimePassed(currentTime))) {
+
+                        EventHeartbeat heartbeat = ActivityWatch.createHeartbeat(currentFile, currentProject);
+
+                        ActivityWatch.lastFilePath = currentFile;
+                        ActivityWatch.lastHeartbeatTime = currentTime;
+
+                        ActivityWatch.sendHeartbeat(heartbeat);
                     }
                 }
             });
