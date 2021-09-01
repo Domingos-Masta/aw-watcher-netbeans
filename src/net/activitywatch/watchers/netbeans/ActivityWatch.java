@@ -13,25 +13,25 @@ import net.activitywatch.watchers.netbeans.listeners.CustomDocumentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import net.activitywatch.watchers.netbeans.model.Buckets;
+import net.activitywatch.watchers.netbeans.model.HeartbeatQueueItem;
+import net.activitywatch.watchers.netbeans.model.HeartbeatQueueUtilComposer;
 import net.activitywatch.watchers.netbeans.requests.RequestHandler;
 import net.activitywatch.watchers.netbeans.util.Consts;
 import net.activitywatch.watchers.netbeans.util.DateUtils;
-import org.apache.commons.io.FilenameUtils;
+import net.activitywatch.watchers.netbeans.util.Util;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.project.Project;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
@@ -45,8 +45,6 @@ import org.openide.windows.WindowManager;
 @OnShowing
 public class ActivityWatch extends ModuleInstall implements Runnable
 {
-
-    public static final Logger log = Logger.getLogger("ActivityWatch");
 
     // For not error
     public static String VERSION = "Unknown";
@@ -67,19 +65,21 @@ public class ActivityWatch extends ModuleInstall implements Runnable
     private static final Integer MAX_HEARTBEATS_PER_SEC = 1;
 //  END OF IMPLEMENTATION OF VSCODE WATCHER LOGIC
 
+    private static HashMap<String, HeartbeatQueueUtilComposer> heartbeatQueue = new HashMap<>();
+
     public ActivityWatch()
     {
-        log.setLevel(Level.INFO);
+        Util.log.setLevel(Level.INFO);
         try {
             HOST_NAME = InetAddress.getLocalHost().getHostName();
         }
         catch (UnknownHostException ex) {
             Exceptions.printStackTrace(ex);
         }
-        ActivityWatch.buckets = new Buckets(DateUtils.dataTimeAgoraYYYY(),
-                "This is a watcher for netbeans, send information and events "
-                + "to ActivityWatch",
-                "app.editor.activity", Consts.AW_CLIENT_NAME, HOST_NAME);
+        buckets = new Buckets(DateUtils.dataTimeAgoraYYYY(),
+            "This is a watcher for netbeans, send information and events "
+            + "to ActivityWatch",
+            "app.editor.activity", Consts.AW_CLIENT_NAME, HOST_NAME);
     }
 
     @Override
@@ -87,14 +87,14 @@ public class ActivityWatch extends ModuleInstall implements Runnable
     {
         ActivityWatch.VERSION = ActivityWatch.getPluginVersion();
         ActivityWatch.IDE_VERSION = System.getProperty("netbeans.buildnumber");
-        ActivityWatch.log.log(Level.INFO, "Initializing ActivityWatch plugin v{0} "
-                                          + "(https://activitywatch.net/)", ActivityWatch.VERSION);
-        ActivityWatch.info("ActivityWatch is loaded");
+        Util.log.log(Level.INFO, "Initializing ActivityWatch plugin v{0} "
+                                 + "(https://activitywatch.net/)", ActivityWatch.VERSION);
+        Util.info("ActivityWatch is loaded");
 
         ActivityWatch.DEBUG = ActivityWatch.isDebugEnabled();
         if (ActivityWatch.DEBUG) {
-            log.setLevel(Level.CONFIG);
-            ActivityWatch.debug("Logging level set to DEBUG");
+            Util.log.setLevel(Level.CONFIG);
+            Util.debug("Logging level set to DEBUG");
         }
 
         // Listen for changes to documents
@@ -116,7 +116,7 @@ public class ActivityWatch extends ModuleInstall implements Runnable
         // Register event change listener
         EditorRegistry.addPropertyChangeListener(l);
         // Finish initilizations
-        ActivityWatch.info("Finished initializing ActivityWatch plugin.");
+        Util.info("Finished initializing ActivityWatch plugin.");
         // install update checker when UI is ready (main window shown)
         WindowManager.getDefault().invokeWhenUIReady(new Runnable()
         {
@@ -127,7 +127,7 @@ public class ActivityWatch extends ModuleInstall implements Runnable
                     UpdateHandler.checkAndHandleUpdates();
                 }
                 catch (NullPointerException e) {
-                    ActivityWatch.error(e.toString());
+                    Util.error(e.toString());
                 }
             }
         });
@@ -147,7 +147,7 @@ public class ActivityWatch extends ModuleInstall implements Runnable
                 NbPreferences.forModule(ActivityWatch.class).put("Debug", debug);
             }
             catch (Exception e) {
-                ActivityWatch.warn(e.toString());
+                Util.warn(e.toString());
             }
         }
         return debug != null && debug.equals("true");
@@ -168,29 +168,60 @@ public class ActivityWatch extends ModuleInstall implements Runnable
 
     public static EventHeartbeat createHeartbeat(String currentFile, Project currentProject)
     {
-        EventData data = new EventData(currentFile, currentProject, getFileExtension(currentFile));
+        EventData data = new EventData(currentFile, currentProject, Util.getFileExtension(currentFile));
         EventHeartbeat heartbeat = new EventHeartbeat(data);
         return heartbeat;
     }
 
-    public static void sendHeartbeat(final EventHeartbeat heartbeat)
+    public static void heartbeat(EventHeartbeat heartbeat)
     {
-        ActivityWatch.info("Executing CLI: Send data ... " + ActivityWatch.buckets);
+        insertHeartbeatData(ActivityWatch.buckets, ActivityWatch.PULSE_TIME, heartbeat);
+    }
+
+    public static void insertHeartbeatData(Buckets buckets, Integer pulseTime, EventHeartbeat eventHeartbeat)
+    {
+        if (!heartbeatQueue.containsKey(buckets.getId())) {
+            heartbeatQueue.put(buckets.getId(), new HeartbeatQueueUtilComposer(false, new ArrayList<HeartbeatQueueItem>()));
+        }
+        heartbeatQueue.get(buckets.getId()).getHeartbeatQueueItems().add(new HeartbeatQueueItem(pulseTime, eventHeartbeat));
+        updateHeartbeatQueue(buckets, pulseTime);
+    }
+
+    public static void updateHeartbeatQueue(Buckets buckets, Integer pulseTime)
+    {
+        HeartbeatQueueUtilComposer utilComposer = heartbeatQueue.get(buckets.getId());
+        if (!utilComposer.isIsProcessing() && utilComposer.getHeartbeatQueueItems().size() > 0) {
+
+            HeartbeatQueueItem item = utilComposer.getHeartbeatQueueItems().stream().findFirst().orElse(null);
+            utilComposer.setIsProcessing(true);
+            if (item != null) {
+                utilComposer.getHeartbeatQueueItems().remove(item);
+                sendHeartbeat(buckets, item, utilComposer);
+            }
+        }
+    }
+
+    public static void sendHeartbeat(final Buckets buckets, final HeartbeatQueueItem queueItem, final HeartbeatQueueUtilComposer composer)
+    {
+        Util.info("Executing CLI: Send data ... " + buckets);
         Runnable r = new Runnable()
         {
+            @Override
             public void run()
             {
-                ActivityWatch.info("Executing CLI: Send data ... " + RequestHandler.javaObjToJSON(heartbeat));
+                Util.info("Executing CLI: Send data ... " + RequestHandler.javaObjToJSON(queueItem.getHeartbeat()));
                 try {
-                    String requestResponse = RequestHandler.getRequest("/api/0/buckets/" + ActivityWatch.buckets.getId(), ActivityWatch.DEBUG);
-                    ActivityWatch.info("Bucket:  " + ActivityWatch.buckets + ";  Query response: " + requestResponse);
-                    if (requestResponse.equalsIgnoreCase("404")) {
-                        requestResponse = RequestHandler.postRquest(ActivityWatch.buckets, "/api/0/buckets/" + ActivityWatch.buckets.getId(), ActivityWatch.DEBUG);
-                        ActivityWatch.info("Bucket:  " + ActivityWatch.buckets + ";  Post response: " + requestResponse);
+                    HashMap<String, String> requestResponse = RequestHandler.getRequest("/api/0/buckets/" + buckets.getId(), ActivityWatch.DEBUG);
+                    Util.info("Bucket:  " + buckets + ";  Query response: " + requestResponse);
+                    if (requestResponse.get(Consts.RESP_CODE).equalsIgnoreCase("404")) {
+                        requestResponse = RequestHandler.postRquest(buckets, "/api/0/buckets/" + buckets.getId(), ActivityWatch.DEBUG);
+                        Util.info("Bucket:  " + buckets + ";  Post response: " + requestResponse);
                     }
-                    requestResponse = RequestHandler.postRquest(heartbeat, "/api/0/buckets/" + ActivityWatch.buckets.getId() + "/pulsetime=" + PULSE_TIME, ActivityWatch.DEBUG);
-//                    requestResponse = RequestHandler.postRquest(heartbeat, "/api/0/buckets/" + ActivityWatch.buckets.getId() + "/events",  ActivityWatch.DEBUG);
-                    ActivityWatch.info("Sending data to server data ... " + requestResponse);
+                    requestResponse = RequestHandler.postRquest(queueItem.getHeartbeat(), "/api/0/buckets/" + buckets.getId() + "/heartbeat?pulsetime=" + queueItem.getPulseTime(), ActivityWatch.DEBUG);
+                    if (!requestResponse.get(Consts.RESP_CODE).equalsIgnoreCase("200")) {
+                        composer.setIsProcessing(false);
+                    }
+                    Util.info("Sending data to server data ... " + requestResponse);
                 }
                 catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -199,43 +230,5 @@ public class ActivityWatch extends ModuleInstall implements Runnable
 
         };
         new Thread(r).start();
-    }
-
-    private static String getFileExtension(String filePath)
-    {
-        String fileExt = FilenameUtils.getExtension(filePath);
-        return fileExt.equals("") ? "Unknown" : fileExt;
-    }
-
-    public static BigDecimal getCurrentTimestamp()
-    {
-        return new BigDecimal(String.valueOf(System.currentTimeMillis() / 1000.0)).setScale(4, BigDecimal.ROUND_HALF_UP);
-    }
-
-    public static void info(String msg)
-    {
-        log.log(Level.INFO, msg);
-    }
-
-    public static void warn(String msg)
-    {
-        log.log(Level.WARNING, msg);
-    }
-
-    public static void error(String msg)
-    {
-        log.log(Level.SEVERE, msg);
-    }
-
-    public static void debug(String msg)
-    {
-        log.log(Level.CONFIG, msg);
-    }
-
-    public static void errorDialog(String msg)
-    {
-        int msgType = NotifyDescriptor.ERROR_MESSAGE;
-        NotifyDescriptor d = new NotifyDescriptor.Message(msg, msgType);
-        DialogDisplayer.getDefault().notify(d);
     }
 }

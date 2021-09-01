@@ -5,5 +5,5 @@ OpenIDE-Module-Install: net/activitywatch/watchers/netbeans/ActivityWatch.class
 OpenIDE-Module-Layer: net/activitywatch/watchers/netbeans/layer.xml
 OpenIDE-Module-Localizing-Bundle: net/activitywatch/watchers/netbeans/Bundle.properties
 OpenIDE-Module-Implementation-Version: 201501010101
-OpenIDE-Module-Specification-Version: 1.4.4
+OpenIDE-Module-Specification-Version: 1.4.6
 

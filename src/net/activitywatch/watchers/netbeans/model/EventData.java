@@ -53,5 +53,4 @@ public class EventData
     {
         return "EventData{" + "file=" + file + ", project=" + project + ", language=" + language + ", eventType=" + eventType + '}';
     }
-
 }

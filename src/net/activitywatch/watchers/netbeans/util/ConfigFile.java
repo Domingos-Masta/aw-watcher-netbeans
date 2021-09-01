@@ -12,7 +12,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import net.activitywatch.watchers.netbeans.ActivityWatch;
 
 /**
  *
@@ -21,7 +20,7 @@ import net.activitywatch.watchers.netbeans.ActivityWatch;
 public class ConfigFile
 {
 
-    private static File userHomeDir = new File(System.getProperty("user.home"));
+    private static File userHomeDir = new File(System.getProperty(Consts.USER_HOME));
     private static File configFile = new File(userHomeDir, Consts.CONFIG);
 
 //    Podemos adicionar sempre mais uma informação apra testes
@@ -51,7 +50,7 @@ public class ConfigFile
                 }
             }
             catch (Exception e) {
-                ActivityWatch.error(e.toString());
+                Util.error(e.toString());
                 e.printStackTrace();
             }
             finally {
@@ -59,7 +58,7 @@ public class ConfigFile
                     br.close();
                 }
                 catch (IOException e) {
-                    ActivityWatch.error(e.toString());
+                    Util.error(e.toString());
                     e.printStackTrace();
                 }
             }
@@ -118,7 +117,7 @@ public class ConfigFile
                 }
             }
             catch (Exception e) {
-                ActivityWatch.error(e.toString());
+                Util.error(e.toString());
                 e.printStackTrace();
             }
             finally {
@@ -126,7 +125,7 @@ public class ConfigFile
                     br.close();
                 }
                 catch (IOException e) {
-                    ActivityWatch.error(e.toString());
+                    Util.error(e.toString());
                     e.printStackTrace();
                 }
             }
@@ -144,11 +143,11 @@ public class ConfigFile
             writer = new PrintWriter(configFile.getAbsolutePath(), "UTF-8");
         }
         catch (FileNotFoundException e) {
-            ActivityWatch.error(e.toString());
+            Util.error(e.toString());
             e.printStackTrace();
         }
         catch (UnsupportedEncodingException e) {
-            ActivityWatch.error(e.toString());
+            Util.error(e.toString());
             e.printStackTrace();
         }
         if (writer != null) {

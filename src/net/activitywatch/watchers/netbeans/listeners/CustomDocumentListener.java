@@ -81,7 +81,8 @@ public class CustomDocumentListener implements DocumentListener
                         ActivityWatch.lastFilePath = currentFile;
                         ActivityWatch.lastHeartbeatTime = currentTime;
 
-                        ActivityWatch.sendHeartbeat(heartbeat);
+                        ActivityWatch.heartbeat(heartbeat);
+//                        ActivityWatch.sendHeartbeat(heartbeat);
                     }
                 }
             });

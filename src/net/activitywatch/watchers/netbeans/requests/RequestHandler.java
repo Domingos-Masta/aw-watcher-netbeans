@@ -7,12 +7,15 @@ package net.activitywatch.watchers.netbeans.requests;
 
 import com.google.gson.Gson;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import net.activitywatch.watchers.netbeans.ActivityWatch;
+import java.util.HashMap;
+import net.activitywatch.watchers.netbeans.util.Consts;
+import net.activitywatch.watchers.netbeans.util.Util;
 
 /**
  *
@@ -26,7 +29,7 @@ public class RequestHandler
     public boolean IS_TESTING = false;
     private static final String USER_AGENT = "Mozilla/5.0";
 
-    public static String postRquest(Object badyData, String endPoint, boolean isTesting) throws IOException
+    public static HashMap<String, String> postRquest(Object badyData, String endPoint, boolean isTesting) throws IOException
     {
         String port = isTesting ? "5666" : AW_PROD_PORT;
         URL url = new URL(AW_WATCHER_URL + port + endPoint);
@@ -47,10 +50,7 @@ public class RequestHandler
         }
 
         int code = con.getResponseCode();
-
-        System.out.println(code);
-
-        ActivityWatch.info(code + "");
+        String reponseMessage = con.getResponseMessage();
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"))) {
             response = new StringBuilder();
@@ -58,23 +58,27 @@ public class RequestHandler
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
             }
-            System.out.println(response.toString());
-            ActivityWatch.info(response.toString());
+            Util.info(response.toString());
         }
 
-        return response.toString();
+        HashMap<String, String> responseHash = new HashMap<>();
+        responseHash.put(Consts.RESP_CODE, code + "");
+        responseHash.put(Consts.RESP_MESSAGE, reponseMessage);
+        responseHash.put(Consts.RESPONSE, response.toString());
+
+        return responseHash;
 
     }
 
-    public static String getRequest(String endPoint, boolean isTesting) throws IOException
+    public static HashMap<String, String> getRequest(String endPoint, boolean isTesting) throws IOException
     {
         String port = isTesting ? "5666" : AW_PROD_PORT;
-        String url = AW_WATCHER_URL + port + endPoint;
-        URL obj = new URL(url);
+        URL url = new URL(AW_WATCHER_URL + port + endPoint);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("User-Agent", USER_AGENT);
         int responseCode = con.getResponseCode();
+        String responseCode = con.getResponseCode();
         ActivityWatch.info("Query response: " + responseCode);
         if (responseCode == HttpURLConnection.HTTP_OK) { // success
             BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -89,12 +93,20 @@ public class RequestHandler
 
             // print result
             ActivityWatch.info("Query response: " + response.toString());
-            return response.toString();
+            responseHash = new HashMap<>();
+            responseHash.put(Consts.RESP_CODE, code + "");
+            responseHash.put(Consts.RESP_MESSAGE, reponseMessage);
+            responseHash.put(Consts.RESPONSE, response.toString());
+
         }
         else {
             ActivityWatch.info("GET request not worked");
-            return "" + responseCode;
+            responseHash.put(Consts.RESP_CODE, code + "");
+            responseHash.put(Consts.RESP_MESSAGE, reponseMessage);
+            responseHash.put(Consts.RESPONSE, response.toString());Ï
         }
+
+        return responseHash;
 
     }
 

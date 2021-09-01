@@ -49,7 +49,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
-import net.activitywatch.watchers.netbeans.ActivityWatch;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
@@ -97,7 +96,7 @@ public final class UpdateHandler
     public static void checkAndHandleUpdates()
     {
 
-        ActivityWatch.log.info("Checking for updates...");
+        Util.info("Checking for updates...");
 
         // refresh silent update center first
         refreshSilentUpdateProvider();
@@ -109,21 +108,21 @@ public final class UpdateHandler
         }
         if (updates.isEmpty() && available.isEmpty()) {
             // none for install
-            ActivityWatch.log.info("Plugin is up to date.");
+            Util.info("Plugin is up to date.");
             return;
         }
 
-        ActivityWatch.log.info("Found new plugin version, updating...");
+        Util.info("Found new plugin version, updating...");
 
         // create a container for install
         OperationContainer<InstallSupport> containerForInstall = feedContainer(available, false);
         if (containerForInstall != null) {
             try {
                 handleInstall(containerForInstall);
-                ActivityWatch.log.info("Plugin installation finished.");
+                Util.info("Plugin installation finished.");
             }
             catch (UpdateHandlerException ex) {
-                ActivityWatch.log.log(Level.SEVERE, ex.toString());
+                Util.error(ex.toString());
                 return;
             }
         }
@@ -133,10 +132,10 @@ public final class UpdateHandler
         if (containerForUpdate != null) {
             try {
                 handleInstall(containerForUpdate);
-                ActivityWatch.log.info("Plugin update finished.");
+                Util.log.info("Plugin update finished.");
             }
             catch (UpdateHandlerException ex) {
-                ActivityWatch.log.log(Level.SEVERE, ex.toString());
+                Util.log.log(Level.SEVERE, ex.toString());
                 return;
             }
         }
@@ -236,29 +235,29 @@ public final class UpdateHandler
         UpdateUnitProvider silentUpdateProvider = getSilentUpdateProvider();
         if (silentUpdateProvider == null) {
             // have a problem => cannot continue
-            ActivityWatch.log.info("Missing Silent Update Provider => cannot continue.");
+            Util.info("Missing Silent Update Provider => cannot continue.");
             return;
         }
         try {
             final String displayName = "Checking for plugin updates...";
             silentUpdateProvider.refresh(
-                    ProgressHandleFactory.createHandle(
-                            displayName,
-                            new Cancellable()
+                ProgressHandleFactory.createHandle(
+                    displayName,
+                    new Cancellable()
+                {
+                    @Override
+                    public boolean cancel()
                     {
-                        @Override
-                        public boolean cancel()
-                        {
-                            return true;
-                        }
+                        return true;
                     }
-                    ),
-                    true
+                }
+                ),
+                true
             );
         }
         catch (IOException ex) {
             // caught a exception
-            ActivityWatch.log.log(Level.SEVERE, "A problem caught while refreshing Update Centers, cause: " + ex.toString());
+            Util.error("A problem caught while refreshing Update Centers, cause: " + ex.toString());
         }
     }
 
@@ -270,23 +269,23 @@ public final class UpdateHandler
                 try {
                     final String displayName = "Checking for plugin updates...";
                     p.refresh(
-                            ProgressHandleFactory.createHandle(
-                                    displayName,
-                                    new Cancellable()
+                        ProgressHandleFactory.createHandle(
+                            displayName,
+                            new Cancellable()
+                        {
+                            @Override
+                            public boolean cancel()
                             {
-                                @Override
-                                public boolean cancel()
-                                {
-                                    return true;
-                                }
+                                return true;
                             }
-                            ),
-                            true
+                        }
+                        ),
+                        true
                     );
                 }
                 catch (IOException ex) {
                     // caught a exception
-                    ActivityWatch.log.log(Level.SEVERE, "A problem caught while refreshing Update Centers, cause: " + ex.toString());
+                    Util.error("A problem caught while refreshing Update Centers, cause: " + ex.toString());
                 }
                 return p;
             }
@@ -311,7 +310,7 @@ public final class UpdateHandler
         // loop all updates and add to container for update
         for (UpdateElement ue : updates) {
             if (container.canBeAdded(ue.getUpdateUnit(), ue)) {
-                ActivityWatch.log.info("Update found: " + ue);
+                Util.info("Update found: " + ue);
                 OperationInfo<InstallSupport> operationInfo = container.add(ue);
                 if (operationInfo == null) {
                     continue;
@@ -319,7 +318,7 @@ public final class UpdateHandler
                 container.add(operationInfo.getRequiredElements());
                 if (!operationInfo.getBrokenDependencies().isEmpty()) {
                     // have a problem => cannot continue
-                    ActivityWatch.log.info("There are broken dependencies => cannot continue, broken deps: " + operationInfo.getBrokenDependencies());
+                    Util.info("There are broken dependencies => cannot continue, broken deps: " + operationInfo.getBrokenDependencies());
                     return null;
                 }
             }
@@ -345,8 +344,8 @@ public final class UpdateHandler
     {
         final String displayName = "Downloading new plugin version...";
         ProgressHandle downloadHandle = ProgressHandleFactory.createHandle(
-                displayName,
-                new Cancellable()
+            displayName,
+            new Cancellable()
         {
             @Override
             public boolean cancel()
@@ -362,8 +361,8 @@ public final class UpdateHandler
     {
         final String displayName = "Validating plugin...";
         ProgressHandle validateHandle = ProgressHandleFactory.createHandle(
-                displayName,
-                new Cancellable()
+            displayName,
+            new Cancellable()
         {
             @Override
             public boolean cancel()
@@ -380,8 +379,8 @@ public final class UpdateHandler
     {
         final String displayName = "Installing plugin...";
         ProgressHandle installHandle = ProgressHandleFactory.createHandle(
-                displayName,
-                new Cancellable()
+            displayName,
+            new Cancellable()
         {
             @Override
             public boolean cancel()
