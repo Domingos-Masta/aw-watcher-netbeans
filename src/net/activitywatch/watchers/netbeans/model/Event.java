@@ -5,27 +5,28 @@
  */
 package net.activitywatch.watchers.netbeans.model;
 
-import net.activitywatch.watchers.netbeans.util.Util;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  *
  * @author domingos.fernando
  */
-public class EventHeartbeat
+public class Event
 {
 
-    private final String timestamp;
+    private final Date timestamp;
     private final Long duration;
-    private final EventData data;
+    private final Data data;
 
-    public EventHeartbeat(EventData data)
+    public Event(Data data)
     {
-        this.timestamp = Util.getDateFormat();
+        this.timestamp = Calendar.getInstance().getTime();
         this.duration = Long.valueOf(0);
         this.data = data;
     }
 
-    public String getTimestamp()
+    public Date getTimestamp()
     {
         return timestamp;
     }
@@ -35,7 +36,7 @@ public class EventHeartbeat
         return duration;
     }
 
-    public EventData getData()
+    public Data getData()
     {
         return data;
     }

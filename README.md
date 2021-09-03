@@ -47,6 +47,11 @@ If you run into any errors or have feature requests, please [open an issue](http
 
 ## Release Notes
 
+### 2.0.0
+
+- Improve time track
+- Implement on save event listener
+
 ### 0.1.0
 
-Initial release of aw-watcher-vscode.
+Initial release of aw-watcher-netbeans.

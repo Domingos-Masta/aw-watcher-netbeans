@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.io.FilenameUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -23,17 +22,25 @@ public class Util
 
     public static final Logger log = Logger.getLogger("ActivityWatch");
 
+    public static final String AW_CLIENT_NAME = "aw-watcher-netbeans";
+    public static final String NAMESPACE = "net.activitywatch.watchers.netbeans";
+    public static final String IDE_NAME = "NetBeans";
+    public static final String CODE_NAME = "net_activitywatch_watchers_netbeans_update_center";
+    public static final String CONFIG = ".activitywatch.cfg";
+    public static final String RESP_MESSAGE = "message";
+    public static final String RESPONSE = "response";
+    public static final String RESP_CODE = "code";
+    public static final String USER_HOME = "user.home";
+    public static final String POST_REQ = "POST";
+    public static final String GET_REQ = "GET";
+
+    public static final short FREQUENCY = 2;
+
     public static final String getDateFormat()
     {
         Date now = new Date();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // T15:23:55Z Quoted "Z" to indicate UTC, no timezone offset
         return df.format(now);
-    }
-
-    public static String getFileExtension(String filePath)
-    {
-        String fileExt = FilenameUtils.getExtension(filePath);
-        return fileExt.equals("") ? "Unknown" : fileExt;
     }
 
     public static void info(String msg)

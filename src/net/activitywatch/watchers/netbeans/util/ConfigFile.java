@@ -20,8 +20,8 @@ import java.io.UnsupportedEncodingException;
 public class ConfigFile
 {
 
-    private static File userHomeDir = new File(System.getProperty(Consts.USER_HOME));
-    private static File configFile = new File(userHomeDir, Consts.CONFIG);
+    private static File userHomeDir = new File(System.getProperty(Util.USER_HOME));
+    private static File configFile = new File(userHomeDir, Util.CONFIG);
 
 //    Podemos adicionar sempre mais uma informação apra testes
     public static String get(String section, String key)

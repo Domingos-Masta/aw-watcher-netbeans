@@ -7,14 +7,12 @@ package net.activitywatch.watchers.netbeans.requests;
 
 import com.google.gson.Gson;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
-import net.activitywatch.watchers.netbeans.util.Consts;
 import net.activitywatch.watchers.netbeans.util.Util;
 
 /**
@@ -62,9 +60,9 @@ public class RequestHandler
         }
 
         HashMap<String, String> responseHash = new HashMap<>();
-        responseHash.put(Consts.RESP_CODE, code + "");
-        responseHash.put(Consts.RESP_MESSAGE, reponseMessage);
-        responseHash.put(Consts.RESPONSE, response.toString());
+        responseHash.put(Util.RESP_CODE, code + "");
+        responseHash.put(Util.RESP_MESSAGE, reponseMessage);
+        responseHash.put(Util.RESPONSE, response.toString());
 
         return responseHash;
 
@@ -74,12 +72,13 @@ public class RequestHandler
     {
         String port = isTesting ? "5666" : AW_PROD_PORT;
         URL url = new URL(AW_WATCHER_URL + port + endPoint);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("User-Agent", USER_AGENT);
         int responseCode = con.getResponseCode();
-        String responseCode = con.getResponseCode();
-        ActivityWatch.info("Query response: " + responseCode);
+        String reponseMessage = con.getResponseMessage();
+        Util.info("Query response: " + responseCode);
+        HashMap<String, String> responseHash;
         if (responseCode == HttpURLConnection.HTTP_OK) { // success
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     con.getInputStream()));
@@ -92,18 +91,18 @@ public class RequestHandler
             in.close();
 
             // print result
-            ActivityWatch.info("Query response: " + response.toString());
+            Util.info("Query response: " + response.toString());
             responseHash = new HashMap<>();
-            responseHash.put(Consts.RESP_CODE, code + "");
-            responseHash.put(Consts.RESP_MESSAGE, reponseMessage);
-            responseHash.put(Consts.RESPONSE, response.toString());
+            responseHash.put(Util.RESP_CODE, responseCode + "");
+            responseHash.put(Util.RESP_MESSAGE, reponseMessage);
+            responseHash.put(Util.RESPONSE, response.toString());
 
         }
         else {
-            ActivityWatch.info("GET request not worked");
-            responseHash.put(Consts.RESP_CODE, code + "");
-            responseHash.put(Consts.RESP_MESSAGE, reponseMessage);
-            responseHash.put(Consts.RESPONSE, response.toString());Ï
+            Util.info("GET request not worked");
+            responseHash = new HashMap<>();
+            responseHash.put(Util.RESP_CODE, responseCode + "");
+            responseHash.put(Util.RESP_MESSAGE, reponseMessage);
         }
 
         return responseHash;

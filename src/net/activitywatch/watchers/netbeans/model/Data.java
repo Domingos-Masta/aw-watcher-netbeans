@@ -12,7 +12,7 @@ import org.netbeans.api.project.Project;
  *
  * @author domingos.fernando
  */
-public class EventData
+public class Data
 {
 
     private final String file;
@@ -20,7 +20,7 @@ public class EventData
     private final String language;
     private final String eventType = "app.editor.activity";
 
-    public EventData(String file, Project project, String language)
+    public Data(String file, Project project, String language)
     {
         this.file = file;
         this.project = project.getProjectDirectory().getPath();

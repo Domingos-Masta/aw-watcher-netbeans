@@ -5,7 +5,7 @@
  */
 package net.activitywatch.watchers.netbeans.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Date;
 
 /**
  *
@@ -14,35 +14,14 @@ import com.google.gson.annotations.SerializedName;
 public class Buckets
 {
 
-    @SerializedName("id")
-    private String id;
+    private final String id;
+    private final Date created;
+    private final String name;
+    private final String type;
+    private final String client;
+    private final String hostname;
 
-    @SerializedName("created")
-    private String created;
-
-    @SerializedName("name")
-    private String name;
-
-    @SerializedName("type")
-    private String type;
-
-    @SerializedName("client")
-    private String client;
-
-    @SerializedName("hostname")
-    private String hostname;
-
-    public Buckets(String id, String created, String name, String type, String client, String hostname)
-    {
-        this.id = id;
-        this.created = created;
-        this.name = name;
-        this.type = type;
-        this.client = client;
-        this.hostname = hostname;
-    }
-
-    public Buckets(String created, String name, String type, String client, String hostname)
+    public Buckets(Date created, String name, String type, String client, String hostname)
     {
         this.id = client + "_" + hostname;
         this.created = created;
@@ -57,19 +36,9 @@ public class Buckets
         return id;
     }
 
-    public void setId(String id)
-    {
-        this.id = id;
-    }
-
-    public String getCreated()
+    public Date getCreated()
     {
         return created;
-    }
-
-    public void setCreated(String created)
-    {
-        this.created = created;
     }
 
     public String getName()
@@ -77,19 +46,9 @@ public class Buckets
         return name;
     }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-
     public String getType()
     {
         return type;
-    }
-
-    public void setType(String type)
-    {
-        this.type = type;
     }
 
     public String getClient()
@@ -97,19 +56,9 @@ public class Buckets
         return client;
     }
 
-    public void setClient(String client)
-    {
-        this.client = client;
-    }
-
     public String getHostname()
     {
         return hostname;
-    }
-
-    public void setHostname(String hostname)
-    {
-        this.hostname = hostname;
     }
 
     @Override

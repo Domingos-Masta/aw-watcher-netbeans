@@ -241,18 +241,18 @@ public final class UpdateHandler
         try {
             final String displayName = "Checking for plugin updates...";
             silentUpdateProvider.refresh(
-                ProgressHandleFactory.createHandle(
-                    displayName,
-                    new Cancellable()
-                {
-                    @Override
-                    public boolean cancel()
+                    ProgressHandleFactory.createHandle(
+                            displayName,
+                            new Cancellable()
                     {
-                        return true;
+                        @Override
+                        public boolean cancel()
+                        {
+                            return true;
+                        }
                     }
-                }
-                ),
-                true
+                    ),
+                    true
             );
         }
         catch (IOException ex) {
@@ -265,22 +265,22 @@ public final class UpdateHandler
     {
         List<UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(true);
         for (UpdateUnitProvider p : providers) {
-            if (Consts.CODE_NAME.equals(p.getName())) {
+            if (Util.CODE_NAME.equals(p.getName())) {
                 try {
                     final String displayName = "Checking for plugin updates...";
                     p.refresh(
-                        ProgressHandleFactory.createHandle(
-                            displayName,
-                            new Cancellable()
-                        {
-                            @Override
-                            public boolean cancel()
+                            ProgressHandleFactory.createHandle(
+                                    displayName,
+                                    new Cancellable()
                             {
-                                return true;
+                                @Override
+                                public boolean cancel()
+                                {
+                                    return true;
+                                }
                             }
-                        }
-                        ),
-                        true
+                            ),
+                            true
                     );
                 }
                 catch (IOException ex) {
@@ -344,8 +344,8 @@ public final class UpdateHandler
     {
         final String displayName = "Downloading new plugin version...";
         ProgressHandle downloadHandle = ProgressHandleFactory.createHandle(
-            displayName,
-            new Cancellable()
+                displayName,
+                new Cancellable()
         {
             @Override
             public boolean cancel()
@@ -361,8 +361,8 @@ public final class UpdateHandler
     {
         final String displayName = "Validating plugin...";
         ProgressHandle validateHandle = ProgressHandleFactory.createHandle(
-            displayName,
-            new Cancellable()
+                displayName,
+                new Cancellable()
         {
             @Override
             public boolean cancel()
@@ -379,8 +379,8 @@ public final class UpdateHandler
     {
         final String displayName = "Installing plugin...";
         ProgressHandle installHandle = ProgressHandleFactory.createHandle(
-            displayName,
-            new Cancellable()
+                displayName,
+                new Cancellable()
         {
             @Override
             public boolean cancel()
@@ -394,7 +394,7 @@ public final class UpdateHandler
 
     private static boolean installNewModules()
     {
-        String s = NbBundle.getBundle(Consts.NAMESPACE + ".Bundle").getString("UpdateHandler.NewModules");
+        String s = NbBundle.getBundle(Util.NAMESPACE + ".Bundle").getString("UpdateHandler.NewModules");
         return Boolean.parseBoolean(s);
     }
 }
