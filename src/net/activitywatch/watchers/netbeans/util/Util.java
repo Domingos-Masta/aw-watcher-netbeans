@@ -33,6 +33,7 @@ public class Util
     public static final String USER_HOME = "user.home";
     public static final String POST_REQ = "POST";
     public static final String GET_REQ = "GET";
+    public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     public static final short FREQUENCY = 2;
 

@@ -42,7 +42,7 @@ public class SaveListener implements OnSaveTask
                 {
                     final String currentFile = file.getPath();
                     Event event = ActivityWatch.createHeartbeat(currentFile, currentProject);
-                    ActivityWatch.sendHeartbeat(event, true);
+                    ActivityWatch.sendHeartbeat(event, 0);
                     ActivityWatch.lastFile = currentFile;
                     ActivityWatch.lastTime = currentTime;
                 }

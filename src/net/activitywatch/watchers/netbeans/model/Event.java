@@ -5,8 +5,9 @@
  */
 package net.activitywatch.watchers.netbeans.model;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
+import net.activitywatch.watchers.netbeans.util.Util;
 
 /**
  *
@@ -15,18 +16,19 @@ import java.util.Date;
 public class Event
 {
 
-    private final Date timestamp;
+    private final String timestamp;
     private final Long duration;
     private final Data data;
 
     public Event(Data data)
     {
-        this.timestamp = Calendar.getInstance().getTime();
+        SimpleDateFormat sdf = new SimpleDateFormat(Util.DATE_FORMAT_PATTERN);
+        this.timestamp = sdf.format(Calendar.getInstance().getTime());
         this.duration = Long.valueOf(0);
         this.data = data;
     }
 
-    public Date getTimestamp()
+    public String getTimestamp()
     {
         return timestamp;
     }
@@ -46,5 +48,4 @@ public class Event
     {
         return "Event{" + "timestamp=" + timestamp + ", duration=" + duration + ", data=" + data + '}';
     }
-
 }

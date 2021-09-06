@@ -56,7 +56,6 @@ public class ActivityWatch extends ModuleInstall implements Runnable
 
     public static Buckets buckets;
 
-    public static Boolean READY = false;
     public static String lastFile = null;
     public static long lastTime = 0;
 
@@ -150,18 +149,12 @@ public class ActivityWatch extends ModuleInstall implements Runnable
         return "Unknown";
     }
 
-    public static void sendHeartbeat(Event event, boolean isWrite)
+    public static void sendHeartbeat(final Event event, final int tries)
     {
-        if (ActivityWatch.READY) {
-            sendHeartbeat(event, isWrite, 0);
-        }
-    }
-
-    private static void sendHeartbeat(final Event event, final boolean isWrite, final int tries)
-    {
-        Util.debug("Executing CLI: ");
+        Util.debug("Executing Send data: ");
         Runnable r = new Runnable()
         {
+            @Override
             public void run()
             {
                 try {
@@ -174,11 +167,9 @@ public class ActivityWatch extends ModuleInstall implements Runnable
                         Util.info("Bucket:  " + buckets + ";  Post response: " + requestResponse);
                     }
                     requestResponse = executeRequest(event, "/api/0/buckets/" + buckets.getId() + "/events", Util.POST_REQ);
-//                    requestResponse = executeRequest(event, "/api/0/buckets/" + buckets.getId() + "/heartbeat?pulsetime=" + 0, ActivityWatch.DEBUG);
                     Util.info("Sending data to server data ... " + requestResponse);
-
                 }
-                catch (Exception e) {
+                catch (IOException e) {
                     if (tries < 3) {
                         Util.debug(e.toString());
                         try {
@@ -187,7 +178,7 @@ public class ActivityWatch extends ModuleInstall implements Runnable
                         catch (InterruptedException e1) {
                             Util.error(e1.toString());
                         }
-                        sendHeartbeat(event, isWrite, tries + 1);
+                        sendHeartbeat(event, tries + 1);
                     }
                     else {
                         Util.error(e.toString());

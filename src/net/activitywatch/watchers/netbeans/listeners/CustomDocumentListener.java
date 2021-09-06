@@ -75,7 +75,7 @@ public class CustomDocumentListener implements DocumentListener
                     final String currentFile = file.getPath();
                     if ((!currentFile.equals(ActivityWatch.lastFile) || ActivityWatch.enoughTimePassed(currentTime))) {
                         Event event = ActivityWatch.createHeartbeat(currentFile, currentProject);
-                        ActivityWatch.sendHeartbeat(event, true);
+                        ActivityWatch.sendHeartbeat(event, 0);
                         ActivityWatch.lastFile = currentFile;
                         ActivityWatch.lastTime = currentTime;
                     }
